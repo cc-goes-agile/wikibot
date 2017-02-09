@@ -57,7 +57,7 @@ bot.dialog('/', new builder.SimpleDialog(function (session, results) {
 function createThumbnailCard(session, options) {
     var buttons = [];
     for (var i=0;i<options.length;i++) {
-        var card = builder.CardAction.postBack(session, options[i], options[i]);
+        var card = builder.CardAction.imBack(session, options[i], options[i]);
         buttons.push(card);
     }
     return new builder.ThumbnailCard(session)
