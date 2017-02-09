@@ -33,11 +33,36 @@ bot.dialog('/', new builder.SimpleDialog(function (session, results) {
     request(url, function(err, resp, body){
         $ = cheerio.load(body);
         var link = $('.searchresults .mw-search-exists a').attr('href'); //use your CSS selector here
-        url = wikiUrl+link;
-        request(url, function(err, resp, body) {
-            $ = cheerio.load(body);
-            var text = $('#mf-section-0 p').text();
-            session.send(text);
-        });
+        if (link) {
+            url = wikiUrl+link;
+            request(url, function(err, resp, body) {
+                $ = cheerio.load(body);
+                var text = $('#mf-section-0 p').text();
+                session.send(text);
+            });
+        } else {
+            var searchResults = $('.mw-search-results li a'),
+                links = [];
+            searchResults.each(function (i, e) {
+                links.push($(e).attr("title"));
+            });
+            //builder.Prompts.choice(session, "Ich habe leider keine passende Seite gefunden. Wie wäre es mit diesen Alternativen?", links);
+            var card = createThumbnailCard(session, links);
+            var msg = new builder.Message(session).addAttachment(card);
+            session.send(msg);
+        }
     });
 }));
+
+function createThumbnailCard(session, options) {
+    var buttons = [];
+    for (var i=0;i<options.length;i++) {
+        var card = builder.CardAction.postBack(session, options[i], options[i]);
+        buttons.push(card);
+    }
+    return new builder.ThumbnailCard(session)
+        .title('Wikibot')
+        .subtitle('')
+        .text('Ich habe leider keine passende Seite gefunden. Wie wäre es mit diesen Alternativen?')
+        .buttons(buttons);
+}
